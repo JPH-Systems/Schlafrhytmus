@@ -1,4 +1,3 @@
-#include "CurieEEPROM.h"
 #include "CurieIMU.h"
 #include "CurieTimerOne.h"
 #include "CurieBLE.h"
@@ -16,7 +15,6 @@ const byte greenLED = 12; //zeigt ob Bewegungen stattfinden
 const byte interruptPin_sub = 10; //Knopf um fuer negative kal
 const byte interruptPin_add = 6; //Knopf um fuer positive kal
 const byte interruptPin_kal = 4; //Knopf um fuer kal
-int eeAddress = 0;
 
 int axisPos = -1;
 int time_xp = -1;
@@ -77,10 +75,7 @@ void setup() {
   attachInterrupt(interruptPin_add, button_add, FALLING);
   attachInterrupt(interruptPin_kal, auto_kal, FALLING);
   digitalWrite(ledPin, HIGH);
-  EEPROM.get(eeAddress, auto_kal_wert);
-  Serial.println("EProm Read: " + auto_kal_wert);
-
-
+  auto_kal();
 
 }
 
@@ -106,14 +101,12 @@ void button_sub() {
   Serial.println("Button Sub");
   auto_kal_wert -= 1;
   CurieIMU.setDetectionThreshold(CURIE_IMU_SHOCK, auto_kal_wert);
-  EEPROM.put(eeAddress, auto_kal_wert);
 }
 
 void button_add() {
   Serial.println("Button Add");
   auto_kal_wert += 1;
   CurieIMU.setDetectionThreshold(CURIE_IMU_SHOCK, auto_kal_wert);
-  EEPROM.put(eeAddress, auto_kal_wert);
 }
 
 void autokal() {
@@ -127,7 +120,6 @@ void autokal() {
     state = LOW;
     digitalWrite(redLED, state);
     CurieTimerOne.kill();
-    EEPROM.put(eeAddress, auto_kal_wert);
   }
   else {
     auto_kal_wert--;
@@ -210,9 +202,10 @@ void loop() { //waehrend der laufzeit wird dies immer wieder durchgefuehrt
 
     // while the central is still connected to peripheral:
 
-
-
-
+    while (central.connected()) {
+      
+      }
+       
 
     // when the central disconnects, print it out:
     digitalWrite(redLED, LOW);
